@@ -23,7 +23,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="icon" href="data:image/svg+xml,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="40" rx="30" ry="35" fill="%23ff6a00" opacity="0.9"/><ellipse cx="50" cy="70" rx="12" ry="18" fill="%23ff6a00" opacity="0.9"/><ellipse cx="37" cy="38" rx="10" ry="14" fill="%23050508" transform="rotate(-10 37 38)"/><ellipse cx="63" cy="38" rx="10" ry="14" fill="%23050508" transform="rotate(10 63 38)"/><ellipse cx="50" cy="58" rx="2" ry="1" fill="%23050508"/><path d="M44 65 Q50 70 56 65" stroke="%23050508" stroke-width="1.5" fill="none"/></svg>">
 <link rel="dns-prefetch" href="https://www.googletagmanager.com">
-<link rel="dns-prefetch" href="https://api.nasa.gov">
+<link rel="dns-prefetch" href="https://www.reddit.com">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -386,15 +386,15 @@ body{overflow-x:hidden}
 <div id="updatePulse" style="position:absolute;top:0;left:0;width:100%;height:2px;background:var(--alien);opacity:0;transition:opacity .3s"></div>
 <div class="live-ticker-inner" style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;gap:20px;align-items:center;overflow-x:auto;white-space:nowrap;font-size:12px;font-weight:600;-webkit-overflow-scrolling:touch">
 <span style="color:var(--alien);display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:var(--alien);animation:blink 2s infinite"></span> LIVE</span>
-<span id="issPos" style="color:var(--text);cursor:pointer" onclick="window.open('https://spotthestation.nasa.gov/tracking_map.cfm','_blank')" title="Click to track ISS">ISS: Loading...</span>
+<span id="issPos" style="color:var(--text);cursor:pointer" onclick="window.open('https://www.n2yo.com/space-station/','_blank')" title="Click to track ISS">ISS: Loading...</span>
 <span style="color:var(--border)">|</span>
 <span id="astroCount" style="color:var(--dim)">Loading...</span>
 <span style="color:var(--border)">|</span>
-<span id="neoCount" style="color:var(--dim)">Loading...</span>
+<span id="ufoFeedTitle" style="color:var(--dim);cursor:pointer" onclick="window.open('https://www.reddit.com/r/UFOs/','_blank')" title="Click to browse r/UFOs">Loading UFO Feed...</span>
 <span style="color:var(--border)">|</span>
-<span id="apodTitle" style="color:var(--dim);cursor:pointer" onclick="window.open('https://apod.nasa.gov/','_blank')" title="Click to view on NASA">Loading NASA APOD...</span>
+<span id="ufoVideoTitle" style="color:var(--dim);cursor:pointer" title="Click to watch">Loading UFO Video...</span>
 <span style="color:var(--border)">|</span>
-<span id="spaceXInfo" style="color:var(--dim);cursor:pointer" onclick="window.open('https://www.spacex.com/launches/','_blank')" title="Click for SpaceX launches">Loading SpaceX...</span>
+<span id="spaceXInfo" style="color:var(--dim);cursor:pointer" onclick="window.open('https://www.reddit.com/r/aliens/','_blank')" title="Click for r/aliens">Loading r/aliens...</span>
 <span style="margin-left:auto;color:var(--muted);font-size:10px" id="lastRefresh">Updating...</span>
 </div>
 </div>
@@ -567,9 +567,22 @@ body{overflow-x:hidden}
 
 </section>
 
-<!-- Live UFO Feed -->
+<!-- Live UFO Video Feed — auto-rotates every 10s -->
+<div style="max-width:800px;margin:20px auto;padding:0 20px">
+<h3 style="font-size:18px;font-weight:800;margin-bottom:12px;color:var(--alien)">UFO Believer Live Feed <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff0040;animation:blink 1.5s infinite;vertical-align:middle;margin-left:6px"></span></h3>
+<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;border:1px solid var(--border);background:#000">
+<iframe id="ufoVideoEmbed" width="100%" height="100%" style="position:absolute;top:0;left:0;width:100%;height:100%" src="https://www.youtube.com/embed/4n3fkTq_p0o?autoplay=0&mute=1" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen loading="lazy"></iframe>
+</div>
+<div id="ufoVideoInfo" style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
+<span id="ufoVideoLabel" style="color:var(--dim);font-size:12px;font-weight:600">The Why Files: CIA Classified Book</span>
+<span style="color:var(--muted);font-size:11px">Auto-rotates every 10s</span>
+</div>
+<div id="ufoVideoNav" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"></div>
+</div>
+
+<!-- Live Reddit Multi-Sub Feed -->
 <div class="reddit-feed-section" style="max-width:800px;margin:20px auto;padding:0 20px">
-<h3 style="font-size:18px;font-weight:800;margin-bottom:12px;color:var(--alien)">Live from r/UFOs</h3>
+<h3 style="font-size:18px;font-weight:800;margin-bottom:12px;color:var(--alien)">Live from r/UFOs + r/aliens + r/HighStrangeness + r/ufo</h3>
 <div id="redditFeed"><p style="color:var(--dim);font-size:13px">Loading live feed...</p></div>
 </div>
 
@@ -834,31 +847,75 @@ document.querySelectorAll('.faq-q').forEach(q=>{
 let _lastUpdate=0;
 function showUpdatePulse(){const el=document.getElementById('updatePulse');if(el){el.style.opacity='1';setTimeout(()=>el.style.opacity='0',2000)}}
 
+// === UFO BELIEVER VIDEO FEED — auto-rotates every 10s ===
+const ufoVideos=[
+  {id:'4n3fkTq_p0o',title:'The Why Files: CIA Classified Book — Pole Shift & Extinctions',channel:'The Why Files'},
+  {id:'GFa0jxNDHTM',title:'Dr. Steven Greer: CE-5 Contact Meditation Techniques',channel:'Dr. Steven Greer'},
+  {id:'g6dw7kP0sBY',title:'Dr. Steven Greer: Project Grudge — Tip of the UFO Iceberg',channel:'Dr. Steven Greer'},
+  {id:'ua0MMXJl3FM',title:'Dr. Steven Greer: Blueprint for a UFO',channel:'Dr. Steven Greer'},
+  {id:'U25jU3D2DcE',title:'Dr. Steven Greer: The Crossing Point — Infallible Contact',channel:'Dr. Steven Greer'},
+  {id:'teeRzaybrXw',title:'CE-5 UFO Sighting: Vero Beach FL — Night Vision Footage',channel:'Dr. Steven Greer'},
+  {id:'urzZNHJ2kLg',title:'Secureteam10: Unexplained UFO Footage Compilation',channel:'Secureteam10'},
+  {id:'m1zBKcbNEfg',title:'Secureteam10: Strange Craft Spotted Over City',channel:'Secureteam10'},
+  {id:'3PLMZOYSTf8',title:'Secureteam10: Military Encounter with Unknown Object',channel:'Secureteam10'},
+  {id:'Q4HSW8gH_TQ',title:'Secureteam10: Bizarre Lights Over Desert — Witness Report',channel:'Secureteam10'},
+  {id:'ObgxhpvAUqE',title:'Secureteam10: New UFO Evidence — Pentagon Footage',channel:'Secureteam10'},
+  {id:'RHTtBUNXg-Q',title:'Secureteam10: Moon Anomalies — What Is Being Hidden?',channel:'Secureteam10'},
+  {id:'9SrOfimQwcA',title:'15 MOST Compelling UFO Videos Ever Recorded',channel:'Top Fives'},
+];
+let currentUfoIdx=0;
+
+function rotateUfoVideo(){
+  currentUfoIdx=(currentUfoIdx+1)%ufoVideos.length;
+  const v=ufoVideos[currentUfoIdx];
+  const iframe=document.getElementById('ufoVideoEmbed');
+  if(iframe)iframe.src='https://www.youtube.com/embed/'+v.id+'?autoplay=0&mute=1';
+  const label=document.getElementById('ufoVideoLabel');
+  if(label)label.textContent=v.channel+': '+v.title;
+  const titleEl=document.getElementById('ufoVideoTitle');
+  if(titleEl){titleEl.textContent=v.channel+': '+v.title.substring(0,50);titleEl.onclick=function(){window.open('https://www.youtube.com/watch?v='+v.id,'_blank')}}
+  updateVideoNav();
+}
+function jumpToVideo(idx){
+  currentUfoIdx=idx;
+  const v=ufoVideos[idx];
+  const iframe=document.getElementById('ufoVideoEmbed');
+  if(iframe)iframe.src='https://www.youtube.com/embed/'+v.id+'?autoplay=0&mute=1';
+  const label=document.getElementById('ufoVideoLabel');
+  if(label)label.textContent=v.channel+': '+v.title;
+  updateVideoNav();
+}
+function updateVideoNav(){
+  const nav=document.getElementById('ufoVideoNav');
+  if(!nav)return;
+  nav.innerHTML=ufoVideos.map((v,i)=>'<button onclick="jumpToVideo('+i+')" style="padding:4px 10px;border-radius:6px;border:1px solid '+(i===currentUfoIdx?'var(--alien)':'var(--border)')+';background:'+(i===currentUfoIdx?'var(--alien)':'var(--card)')+';color:'+(i===currentUfoIdx?'#000':'var(--dim)')+';font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">'+v.channel+'</button>').join('');
+}
+// Build nav on load
+updateVideoNav();
+// Auto-rotate video every 10 seconds
+setInterval(rotateUfoVideo,10000);
+
 async function updateISS(){try{const r=await fetch('https://api.open-notify.org/iss-now.json');const d=await r.json();const el=document.getElementById('issPos');if(el&&d.iss_position){const lat=parseFloat(d.iss_position.latitude).toFixed(1);const lon=parseFloat(d.iss_position.longitude).toFixed(1);el.textContent='ISS: '+lat+'°, '+lon+'°';el.style.color='var(--alien)';setTimeout(()=>el.style.color='var(--text)',1500)}}catch(e){const el=document.getElementById('issPos');if(el&&!el.dataset.loaded)el.textContent='ISS tracking live...'}}
 
 async function loadAstros(){try{const r=await fetch('https://api.open-notify.org/astros.json');const d=await r.json();const el=document.getElementById('astroCount');if(el&&d.number){el.textContent=d.number+' humans in space now';el.dataset.loaded='1'}}catch(e){const el=document.getElementById('astroCount');if(el&&!el.dataset.loaded)el.textContent='Astronauts in orbit now'}}
 
-async function loadAPOD(){try{const r=await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');const d=await r.json();const el=document.getElementById('apodTitle');if(el&&d.title)el.textContent='NASA: '+d.title}catch(e){}}
+async function loadRedditUFOs(){try{const r=await fetch('https://www.reddit.com/r/UFOs+aliens+HighStrangeness+ufo/hot.json?limit=12&raw_json=1');if(!r.ok)throw new Error('Reddit '+r.status);const d=await r.json();const el=document.getElementById('redditFeed');if(el&&d.data&&d.data.children){el.innerHTML=d.data.children.slice(0,12).map((p,i)=>{const post=p.data;const score=post.score||0;const sub=post.subreddit||'UFOs';const time=new Date(post.created_utc*1000);const ago=Math.floor((Date.now()-time)/60000);const agoStr=ago<60?ago+'m ago':Math.floor(ago/60)+'h ago';return '<a href="https://reddit.com'+post.permalink+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;color:var(--text);transition:border-color .2s;cursor:pointer" onmouseover="this.style.borderColor='var(--alien)'" onmouseout="this.style.borderColor='var(--border)'"><span style="color:var(--alien);font-weight:700;min-width:36px;text-align:center;font-size:12px">'+score+'</span><span style="flex:1">'+post.title.replace(/</g,'&lt;').substring(0,100)+'</span><span style="color:var(--muted);font-size:10px;white-space:nowrap;margin:0 4px">r/'+sub+'</span><span style="color:var(--dim);font-size:11px;white-space:nowrap">'+agoStr+'</span></a>'}).join('');el.dataset.loaded='1'}}catch(e){const el=document.getElementById('redditFeed');if(el&&!el.dataset.loaded)el.innerHTML='<div style="text-align:center;padding:20px"><a href="https://reddit.com/r/UFOs" target="_blank" style="color:var(--alien);font-weight:700;font-size:15px">Browse r/UFOs Live Feed &rarr;</a><br><a href="https://reddit.com/r/aliens" target="_blank" style="color:var(--alien);font-weight:600;font-size:13px;margin-top:4px;display:inline-block">r/aliens</a> &middot; <a href="https://reddit.com/r/HighStrangeness" target="_blank" style="color:var(--alien);font-weight:600;font-size:13px">r/HighStrangeness</a> &middot; <a href="https://reddit.com/r/ufo" target="_blank" style="color:var(--alien);font-weight:600;font-size:13px">r/ufo</a><div style="color:var(--dim);font-size:12px;margin-top:6px">Tap to view latest sightings on Reddit</div></div>'}}
 
-async function loadNEO(){try{const today=new Date().toISOString().split('T')[0];const r=await fetch('https://api.nasa.gov/neo/rest/v1/feed?start_date='+today+'&end_date='+today+'&api_key=DEMO_KEY');const d=await r.json();const el=document.getElementById('neoCount');if(el&&d.element_count)el.textContent=d.element_count+' near-Earth objects today'}catch(e){}}
+async function loadUfoTickerFeed(){try{const r=await fetch('https://www.reddit.com/r/UFOs/new.json?limit=3&raw_json=1');if(!r.ok)return;const d=await r.json();const el=document.getElementById('ufoFeedTitle');if(el&&d.data&&d.data.children&&d.data.children.length>0){const post=d.data.children[0].data;el.textContent='r/UFOs: '+post.title.substring(0,60);el.onclick=function(){window.open('https://reddit.com'+post.permalink,'_blank')}}}catch(e){}}
 
-async function loadRedditUFOs(){try{const r=await fetch('https://www.reddit.com/r/UFOs/hot.json?limit=8&raw_json=1');if(!r.ok)throw new Error('Reddit '+r.status);const d=await r.json();const el=document.getElementById('redditFeed');if(el&&d.data&&d.data.children){el.innerHTML=d.data.children.slice(0,8).map((p,i)=>{const post=p.data;const score=post.score||0;const time=new Date(post.created_utc*1000);const ago=Math.floor((Date.now()-time)/60000);const agoStr=ago<60?ago+'m ago':Math.floor(ago/60)+'h ago';return '<a href="https://reddit.com'+post.permalink+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;color:var(--text);transition:border-color .2s;cursor:pointer" onmouseover="this.style.borderColor='var(--alien)'" onmouseout="this.style.borderColor='var(--border)'"><span style="color:var(--alien);font-weight:700;min-width:36px;text-align:center;font-size:12px">'+score+'</span><span style="flex:1">'+post.title.replace(/</g,'&lt;').substring(0,100)+'</span><span style="color:var(--dim);font-size:11px;white-space:nowrap">'+agoStr+'</span></a>'}).join('');el.dataset.loaded='1'}}catch(e){const el=document.getElementById('redditFeed');if(el&&!el.dataset.loaded)el.innerHTML='<div style="text-align:center;padding:20px"><a href="https://reddit.com/r/UFOs" target="_blank" style="color:var(--alien);font-weight:700;font-size:15px">Browse r/UFOs Live Feed &rarr;</a><div style="color:var(--dim);font-size:12px;margin-top:6px">Tap to view latest sightings on Reddit</div></div>'}}
-
-async function loadSpaceXLaunch(){try{const r=await fetch('https://api.spacexdata.com/v5/launches/latest');const d=await r.json();const el=document.getElementById('spaceXInfo');if(el&&d.name)el.textContent='SpaceX: '+d.name+' ('+(d.success?'Success':'Pending')+')'}catch(e){}}
+async function loadAliensSubFeed(){try{const r=await fetch('https://www.reddit.com/r/aliens/hot.json?limit=3&raw_json=1');if(!r.ok)return;const d=await r.json();const el=document.getElementById('spaceXInfo');if(el&&d.data&&d.data.children&&d.data.children.length>0){const post=d.data.children[0].data;el.textContent='r/aliens: '+post.title.substring(0,50);el.onclick=function(){window.open('https://reddit.com'+post.permalink,'_blank')}}}catch(e){}}
 
 async function refreshAll(){
   const ts=document.getElementById('lastRefresh');
-  await Promise.allSettled([updateISS(),loadAstros(),loadNEO(),loadRedditUFOs(),loadSpaceXLaunch()]);
+  await Promise.allSettled([updateISS(),loadAstros(),loadRedditUFOs(),loadUfoTickerFeed(),loadAliensSubFeed()]);
   _lastUpdate=Date.now();
   if(ts)ts.textContent='Updated '+new Date().toLocaleTimeString();
   showUpdatePulse();
 }
-// Initial load — everything at once
-refreshAll();loadAPOD();
+// Initial load
+refreshAll();
 // Auto-refresh every 10 seconds
 setInterval(refreshAll,10000);
-// APOD only changes daily, refresh every 10 min
-setInterval(loadAPOD,600000);
 
 // Sticky CTA
 const stickyCta=document.getElementById('stickyCta');
@@ -1022,7 +1079,7 @@ async function runTool(idx){
   result.innerHTML='<span style="color:var(--accent)">Searching...</span>';result.classList.add('show');
   gtag('event','tool_use',{tool_name:'tool_'+idx,query:q,site:SLUG});
   try{
-    const r=await fetch('https://www.reddit.com/r/UFOs+aliens+UAP/search.json?q='+encodeURIComponent(q)+'&sort=relevance&limit=5&raw_json=1');
+    const r=await fetch('https://www.reddit.com/r/UFOs+aliens+HighStrangeness+ufo/search.json?q='+encodeURIComponent(q)+'&sort=relevance&limit=5&raw_json=1');
     const d=await r.json();
     if(d.data&&d.data.children&&d.data.children.length>0){
       result.innerHTML='<div style="margin-bottom:8px;font-weight:700;color:var(--alien)">Results for "'+q.replace(/</g,'&lt;')+'":</div>'+d.data.children.map(p=>{
