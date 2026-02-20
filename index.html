@@ -62,6 +62,7 @@ a{color:var(--accent);text-decoration:none;transition:opacity .2s}
 a:hover{opacity:.8}
 ::selection{background:var(--accent);color:var(--bg)}
 @keyframes alienGlow{0%{filter:drop-shadow(0 0 8px #ff6a0066)}100%{filter:drop-shadow(0 0 20px #ff6a00aa)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
 .network-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 0;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
 .network-bar::-webkit-scrollbar{display:none}
@@ -249,14 +250,21 @@ a:hover{opacity:.8}
 </div>
 </nav>
 
-<!-- Live Alien Ticker -->
-<div style="background:#0a0a12;border-bottom:1px solid var(--border);padding:8px 0;overflow:hidden">
-<div style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;gap:24px;align-items:center;overflow-x:auto;white-space:nowrap;font-size:12px;font-weight:600">
-<span style="color:var(--alien)">&#128125; LIVE</span>
-<span id="issPos" style="color:var(--text)">ISS: Loading...</span>
+<!-- Live Alien Ticker — auto-refreshes every 30s -->
+<div style="background:#0a0a12;border-bottom:1px solid var(--border);padding:8px 0;overflow:hidden;position:relative">
+<div id="updatePulse" style="position:absolute;top:0;left:0;width:100%;height:2px;background:var(--alien);opacity:0;transition:opacity .3s"></div>
+<div style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;gap:20px;align-items:center;overflow-x:auto;white-space:nowrap;font-size:12px;font-weight:600;-webkit-overflow-scrolling:touch">
+<span style="color:var(--alien);display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:var(--alien);animation:blink 2s infinite"></span> LIVE</span>
+<span id="issPos" style="color:var(--text);cursor:pointer" onclick="window.open('https://spotthestation.nasa.gov/tracking_map.cfm','_blank')" title="Click to track ISS">ISS: Loading...</span>
+<span style="color:var(--border)">|</span>
 <span id="astroCount" style="color:var(--dim)">Loading...</span>
+<span style="color:var(--border)">|</span>
 <span id="neoCount" style="color:var(--dim)">Loading...</span>
-<span id="apodTitle" style="color:var(--dim)">Loading NASA APOD...</span>
+<span style="color:var(--border)">|</span>
+<span id="apodTitle" style="color:var(--dim);cursor:pointer" onclick="window.open('https://apod.nasa.gov/','_blank')" title="Click to view on NASA">Loading NASA APOD...</span>
+<span style="color:var(--border)">|</span>
+<span id="spaceXInfo" style="color:var(--dim);cursor:pointer" onclick="window.open('https://www.spacex.com/launches/','_blank')" title="Click for SpaceX launches">Loading SpaceX...</span>
+<span style="margin-left:auto;color:var(--muted);font-size:10px" id="lastRefresh">Updating...</span>
 </div>
 </div>
 
@@ -690,21 +698,35 @@ document.querySelectorAll('.faq-q').forEach(q=>{
   document.getElementById('toolCount').textContent=(t?Object.keys(t).length:0).toLocaleString();
 }catch(e){}})();
 
-// === ALIEN LIVE FEEDS ===
-async function updateISS(){try{const r=await fetch('https://api.open-notify.org/iss-now.json');const d=await r.json();const el=document.getElementById('issPos');if(el&&d.iss_position)el.textContent='ISS: '+parseFloat(d.iss_position.latitude).toFixed(1)+'\°, '+parseFloat(d.iss_position.longitude).toFixed(1)+'\°';}catch(e){}}
-setInterval(updateISS,10000);updateISS();
+// === ALIEN LIVE FEEDS — auto-refresh every 30s ===
+let _lastUpdate=0;
+function showUpdatePulse(){const el=document.getElementById('updatePulse');if(el){el.style.opacity='1';setTimeout(()=>el.style.opacity='0',2000)}}
 
-async function loadAstros(){try{const r=await fetch('https://api.open-notify.org/astros.json');const d=await r.json();const el=document.getElementById('astroCount');if(el&&d.number)el.textContent=d.number+' humans in space';}catch(e){}}
-loadAstros();setInterval(loadAstros,3600000);
+async function updateISS(){try{const r=await fetch('https://api.open-notify.org/iss-now.json');const d=await r.json();const el=document.getElementById('issPos');if(el&&d.iss_position){const lat=parseFloat(d.iss_position.latitude).toFixed(1);const lon=parseFloat(d.iss_position.longitude).toFixed(1);el.textContent='ISS: '+lat+'°, '+lon+'°';el.style.color='var(--alien)';setTimeout(()=>el.style.color='var(--text)',1500)}}catch(e){}}
 
-async function loadAPOD(){try{const r=await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');const d=await r.json();const el=document.getElementById('apodTitle');if(el&&d.title)el.textContent='NASA: '+d.title;}catch(e){}}
-loadAPOD();
+async function loadAstros(){try{const r=await fetch('https://api.open-notify.org/astros.json');const d=await r.json();const el=document.getElementById('astroCount');if(el&&d.number)el.textContent=d.number+' humans in space now'}catch(e){}}
 
-async function loadNEO(){try{const today=new Date().toISOString().split('T')[0];const r=await fetch('https://api.nasa.gov/neo/rest/v1/feed?start_date='+today+'&end_date='+today+'&api_key=DEMO_KEY');const d=await r.json();const el=document.getElementById('neoCount');if(el&&d.element_count)el.textContent=d.element_count+' near-Earth objects today';}catch(e){}}
-loadNEO();setInterval(loadNEO,300000);
+async function loadAPOD(){try{const r=await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');const d=await r.json();const el=document.getElementById('apodTitle');if(el&&d.title)el.textContent='NASA: '+d.title}catch(e){}}
 
-async function loadRedditUFOs(){try{const r=await fetch('https://www.reddit.com/r/UFOs/hot.json?limit=5');const d=await r.json();const el=document.getElementById('redditFeed');if(el&&d.data&&d.data.children){el.innerHTML=d.data.children.slice(0,5).map(p=>'<a href="https://reddit.com'+p.data.permalink+'" target="_blank" style="display:block;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;color:var(--text)">'+p.data.title.replace(/</g,'&lt;')+'</a>').join('');}}catch(e){}}
-loadRedditUFOs();setInterval(loadRedditUFOs,180000);
+async function loadNEO(){try{const today=new Date().toISOString().split('T')[0];const r=await fetch('https://api.nasa.gov/neo/rest/v1/feed?start_date='+today+'&end_date='+today+'&api_key=DEMO_KEY');const d=await r.json();const el=document.getElementById('neoCount');if(el&&d.element_count)el.textContent=d.element_count+' near-Earth objects today'}catch(e){}}
+
+async function loadRedditUFOs(){try{const r=await fetch('https://www.reddit.com/r/UFOs/hot.json?limit=8&raw_json=1');const d=await r.json();const el=document.getElementById('redditFeed');if(el&&d.data&&d.data.children){el.innerHTML=d.data.children.slice(0,8).map((p,i)=>{const post=p.data;const score=post.score||0;const time=new Date(post.created_utc*1000);const ago=Math.floor((Date.now()-time)/60000);const agoStr=ago<60?ago+'m ago':Math.floor(ago/60)+'h ago';return '<a href="https://reddit.com'+post.permalink+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;color:var(--text);transition:border-color .2s" onmouseover="this.style.borderColor='var(--alien)'" onmouseout="this.style.borderColor='var(--border)'"><span style="color:var(--alien);font-weight:700;min-width:36px;text-align:center;font-size:12px">'+score+'</span><span style="flex:1">'+post.title.replace(/</g,'&lt;').substring(0,100)+'</span><span style="color:var(--dim);font-size:11px;white-space:nowrap">'+agoStr+'</span></a>'}).join('');}}catch(e){}}
+
+async function loadSpaceXLaunch(){try{const r=await fetch('https://api.spacexdata.com/v5/launches/latest');const d=await r.json();const el=document.getElementById('spaceXInfo');if(el&&d.name)el.textContent='SpaceX: '+d.name+' ('+(d.success?'Success':'Pending')+')'}catch(e){}}
+
+async function refreshAll(){
+  const ts=document.getElementById('lastRefresh');
+  await Promise.allSettled([updateISS(),loadAstros(),loadNEO(),loadRedditUFOs(),loadSpaceXLaunch()]);
+  _lastUpdate=Date.now();
+  if(ts)ts.textContent='Updated '+new Date().toLocaleTimeString();
+  showUpdatePulse();
+}
+// Initial load — everything at once
+refreshAll();loadAPOD();
+// Auto-refresh every 30 seconds
+setInterval(refreshAll,30000);
+// APOD only changes daily, refresh every 10 min
+setInterval(loadAPOD,600000);
 
 // Sticky CTA
 const stickyCta=document.getElementById('stickyCta');
@@ -861,14 +883,25 @@ function openTool(card,idx){
   if(!isOpen){panel.style.display='block';card.querySelector('.tool-badge').textContent='Close';const input=document.getElementById('toolInput'+idx);if(input)setTimeout(()=>input.focus(),100)}
 }
 
-function runTool(idx){
+async function runTool(idx){
   const input=document.getElementById('toolInput'+idx);const result=document.getElementById('toolResult'+idx);
   if(!input||!result)return;const q=input.value.trim();
   if(!q){result.innerHTML='<span style="color:var(--accent)">Please enter something.</span>';result.classList.add('show');return}
-  result.innerHTML='<span style="color:var(--accent)">Analyzing...</span>';result.classList.add('show');
+  result.innerHTML='<span style="color:var(--accent)">Searching...</span>';result.classList.add('show');
   gtag('event','tool_use',{tool_name:'tool_'+idx,query:q,site:SLUG});
-  const url='https://www.google.com/search?q='+encodeURIComponent(q+' alien UFO');
-  setTimeout(()=>{result.innerHTML='Results for "<strong>'+q+'</strong>": <a href="'+url+'" target="_blank" style="color:var(--accent)">View results &rarr;</a>'},800);
+  try{
+    const r=await fetch('https://www.reddit.com/r/UFOs+aliens+UAP/search.json?q='+encodeURIComponent(q)+'&sort=relevance&limit=5&raw_json=1');
+    const d=await r.json();
+    if(d.data&&d.data.children&&d.data.children.length>0){
+      result.innerHTML='<div style="margin-bottom:8px;font-weight:700;color:var(--alien)">Results for "'+q.replace(/</g,'&lt;')+'":</div>'+d.data.children.map(p=>{
+        const post=p.data;return '<a href="https://reddit.com'+post.permalink+'" target="_blank" rel="noopener" style="display:block;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:4px;font-size:12px;color:var(--text);transition:border-color .2s" onmouseover="this.style.borderColor='var(--alien)'" onmouseout="this.style.borderColor='var(--border)'">'+post.title.replace(/</g,'&lt;').substring(0,80)+'<span style="color:var(--dim);margin-left:8px;font-size:11px">'+post.score+' pts</span></a>'
+      }).join('')+'<a href="https://www.google.com/search?q='+encodeURIComponent(q+' alien UFO')+'" target="_blank" style="display:inline-block;margin-top:8px;color:var(--alien);font-size:12px;font-weight:700">See more on Google &rarr;</a>';
+    }else{
+      result.innerHTML='No results found. <a href="https://www.google.com/search?q='+encodeURIComponent(q+' alien UFO')+'" target="_blank" style="color:var(--alien)">Try Google &rarr;</a>';
+    }
+  }catch(e){
+    result.innerHTML='<a href="https://www.google.com/search?q='+encodeURIComponent(q+' alien UFO')+'" target="_blank" style="color:var(--alien);font-weight:700">Search "'+q.replace(/</g,'&lt;')+'" on Google &rarr;</a>';
+  }
 }
 
 @keyframes tipPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
