@@ -213,6 +213,7 @@ a:hover{opacity:.8}
   .hero h2{font-size:32px}
   .footer-grid{grid-template-columns:1fr}
 }
+@keyframes tipPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
 </style>
 </head>
 <body>
@@ -704,15 +705,15 @@ document.querySelectorAll('.faq-q').forEach(q=>{
 let _lastUpdate=0;
 function showUpdatePulse(){const el=document.getElementById('updatePulse');if(el){el.style.opacity='1';setTimeout(()=>el.style.opacity='0',2000)}}
 
-async function updateISS(){try{const r=await fetch('https://api.open-notify.org/iss-now.json');const d=await r.json();const el=document.getElementById('issPos');if(el&&d.iss_position){const lat=parseFloat(d.iss_position.latitude).toFixed(1);const lon=parseFloat(d.iss_position.longitude).toFixed(1);el.textContent='ISS: '+lat+'°, '+lon+'°';el.style.color='var(--alien)';setTimeout(()=>el.style.color='var(--text)',1500)}}catch(e){}}
+async function updateISS(){try{const r=await fetch('https://api.open-notify.org/iss-now.json');const d=await r.json();const el=document.getElementById('issPos');if(el&&d.iss_position){const lat=parseFloat(d.iss_position.latitude).toFixed(1);const lon=parseFloat(d.iss_position.longitude).toFixed(1);el.textContent='ISS: '+lat+'°, '+lon+'°';el.style.color='var(--alien)';setTimeout(()=>el.style.color='var(--text)',1500)}}catch(e){const el=document.getElementById('issPos');if(el&&!el.dataset.loaded)el.textContent='ISS tracking live...'}}
 
-async function loadAstros(){try{const r=await fetch('https://api.open-notify.org/astros.json');const d=await r.json();const el=document.getElementById('astroCount');if(el&&d.number)el.textContent=d.number+' humans in space now'}catch(e){}}
+async function loadAstros(){try{const r=await fetch('https://api.open-notify.org/astros.json');const d=await r.json();const el=document.getElementById('astroCount');if(el&&d.number){el.textContent=d.number+' humans in space now';el.dataset.loaded='1'}}catch(e){const el=document.getElementById('astroCount');if(el&&!el.dataset.loaded)el.textContent='Astronauts in orbit now'}}
 
 async function loadAPOD(){try{const r=await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');const d=await r.json();const el=document.getElementById('apodTitle');if(el&&d.title)el.textContent='NASA: '+d.title}catch(e){}}
 
 async function loadNEO(){try{const today=new Date().toISOString().split('T')[0];const r=await fetch('https://api.nasa.gov/neo/rest/v1/feed?start_date='+today+'&end_date='+today+'&api_key=DEMO_KEY');const d=await r.json();const el=document.getElementById('neoCount');if(el&&d.element_count)el.textContent=d.element_count+' near-Earth objects today'}catch(e){}}
 
-async function loadRedditUFOs(){try{const r=await fetch('https://www.reddit.com/r/UFOs/hot.json?limit=8&raw_json=1');const d=await r.json();const el=document.getElementById('redditFeed');if(el&&d.data&&d.data.children){el.innerHTML=d.data.children.slice(0,8).map((p,i)=>{const post=p.data;const score=post.score||0;const time=new Date(post.created_utc*1000);const ago=Math.floor((Date.now()-time)/60000);const agoStr=ago<60?ago+'m ago':Math.floor(ago/60)+'h ago';return '<a href="https://reddit.com'+post.permalink+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;color:var(--text);transition:border-color .2s" onmouseover="this.style.borderColor='var(--alien)'" onmouseout="this.style.borderColor='var(--border)'"><span style="color:var(--alien);font-weight:700;min-width:36px;text-align:center;font-size:12px">'+score+'</span><span style="flex:1">'+post.title.replace(/</g,'&lt;').substring(0,100)+'</span><span style="color:var(--dim);font-size:11px;white-space:nowrap">'+agoStr+'</span></a>'}).join('');}}catch(e){}}
+async function loadRedditUFOs(){try{const r=await fetch('https://www.reddit.com/r/UFOs/hot.json?limit=8&raw_json=1');if(!r.ok)throw new Error('Reddit '+r.status);const d=await r.json();const el=document.getElementById('redditFeed');if(el&&d.data&&d.data.children){el.innerHTML=d.data.children.slice(0,8).map((p,i)=>{const post=p.data;const score=post.score||0;const time=new Date(post.created_utc*1000);const ago=Math.floor((Date.now()-time)/60000);const agoStr=ago<60?ago+'m ago':Math.floor(ago/60)+'h ago';return '<a href="https://reddit.com'+post.permalink+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px;color:var(--text);transition:border-color .2s;cursor:pointer" onmouseover="this.style.borderColor='var(--alien)'" onmouseout="this.style.borderColor='var(--border)'"><span style="color:var(--alien);font-weight:700;min-width:36px;text-align:center;font-size:12px">'+score+'</span><span style="flex:1">'+post.title.replace(/</g,'&lt;').substring(0,100)+'</span><span style="color:var(--dim);font-size:11px;white-space:nowrap">'+agoStr+'</span></a>'}).join('');el.dataset.loaded='1'}}catch(e){const el=document.getElementById('redditFeed');if(el&&!el.dataset.loaded)el.innerHTML='<div style="text-align:center;padding:20px"><a href="https://reddit.com/r/UFOs" target="_blank" style="color:var(--alien);font-weight:700;font-size:15px">Browse r/UFOs Live Feed &rarr;</a><div style="color:var(--dim);font-size:12px;margin-top:6px">Tap to view latest sightings on Reddit</div></div>'}}
 
 async function loadSpaceXLaunch(){try{const r=await fetch('https://api.spacexdata.com/v5/launches/latest');const d=await r.json();const el=document.getElementById('spaceXInfo');if(el&&d.name)el.textContent='SpaceX: '+d.name+' ('+(d.success?'Success':'Pending')+')'}catch(e){}}
 
@@ -725,8 +726,8 @@ async function refreshAll(){
 }
 // Initial load — everything at once
 refreshAll();loadAPOD();
-// Auto-refresh every 30 seconds
-setInterval(refreshAll,30000);
+// Auto-refresh every 10 seconds
+setInterval(refreshAll,10000);
 // APOD only changes daily, refresh every 10 min
 setInterval(loadAPOD,600000);
 
@@ -906,7 +907,7 @@ async function runTool(idx){
   }
 }
 
-@keyframes tipPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+
 </script>
 </body>
 </html>
