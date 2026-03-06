@@ -46,16 +46,6 @@
     }
   ]
 }
-
-// ─── Copy referral link ─────────────────────────────────────────
-window.copyRefLink = function() {
-  var url = window.location.href.split('?')[0];
-  var ref = url + '?ref=spunkart13';
-  navigator.clipboard.writeText(ref).then(function() {
-    var btn = document.querySelector('.ref-copy-btn');
-    if (btn) { var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function(){ btn.textContent = orig; }, 2000); }
-  }).catch(function() {});
-};
 </script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -1221,5 +1211,6 @@ async function runTool(idx){
   <p><a href="https://spunk.codes/newsletter.html" style="color:#58a6ff;" target="_blank" rel="noopener">Get free ebooks &rarr;</a></p>
 </div>
 
+<script src="https://spunk.codes/spunk-ads.js" defer></script>
 </body>
 </html>
