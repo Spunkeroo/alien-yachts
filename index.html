@@ -388,15 +388,15 @@ body{overflow-x:hidden}
 <div id="updatePulse" style="position:absolute;top:0;left:0;width:100%;height:2px;background:var(--alien);opacity:0;transition:opacity .3s"></div>
 <div class="live-ticker-inner" style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;gap:20px;align-items:center;overflow-x:auto;white-space:nowrap;font-size:12px;font-weight:600;-webkit-overflow-scrolling:touch">
 <span style="color:var(--alien);display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:var(--alien);animation:blink 2s infinite"></span> LIVE</span>
-<span id="issPos" style="color:var(--text);cursor:pointer" onclick="window.open('https://www.n2yo.com/space-station/','_blank')" title="Click to track ISS">ISS: Loading...</span>
+<span id="issPos" style="color:var(--text);cursor:pointer" onclick="window.open('https://www.n2yo.com/space-station/','_blank')" title="Click to track ISS">ISS: Tracking Live</span>
 <span style="color:var(--border)">|</span>
-<span id="astroCount" style="color:var(--dim)">Loading...</span>
+<span id="astroCount" style="color:var(--dim)">Astronauts in orbit now</span>
 <span style="color:var(--border)">|</span>
-<span id="ufoFeedTitle" style="color:var(--dim);cursor:pointer" onclick="window.open('https://www.youtube.com/@TheWhyFiles','_blank')" title="Click for latest UFO videos">Loading UFO Feed...</span>
+<span id="ufoFeedTitle" style="color:var(--dim);cursor:pointer" onclick="window.open('https://www.youtube.com/@TheWhyFiles','_blank')" title="Click for latest UFO videos">Latest UFO Sightings</span>
 <span style="color:var(--border)">|</span>
-<span id="ufoVideoTitle" style="color:var(--dim);cursor:pointer" title="Click to watch">Loading UFO Video...</span>
+<span id="ufoVideoTitle" style="color:var(--dim);cursor:pointer" title="Click to watch">UFO Video Feed</span>
 <span style="color:var(--border)">|</span>
-<span id="spaceXInfo" style="color:var(--dim);cursor:pointer" onclick="window.open('https://www.youtube.com/@secureteam10','_blank')" title="Click for Secureteam10">Loading Secureteam10...</span>
+<span id="spaceXInfo" style="color:var(--dim);cursor:pointer" onclick="window.open('https://www.youtube.com/@secureteam10','_blank')" title="Click for Secureteam10">Secureteam10 Latest</span>
 <span style="margin-left:auto;color:var(--muted);font-size:10px" id="lastRefresh">Updating...</span>
 </div>
 </div>
@@ -585,7 +585,7 @@ body{overflow-x:hidden}
 <!-- Live YouTube UFO Feed -->
 <div class="reddit-feed-section" style="max-width:800px;margin:20px auto;padding:0 20px">
 <h3 style="font-size:18px;font-weight:800;margin-bottom:12px;color:var(--alien)">Latest UFO & Alien Videos</h3>
-<div id="ytFeed"><p style="color:var(--dim);font-size:13px">Loading latest videos...</p></div>
+<div id="ytFeed"><p style="color:var(--dim);font-size:13px">Trending space videos</p></div>
 </div>
 
 <!-- Amazon Product Recommendations -->
@@ -1211,6 +1211,5 @@ async function runTool(idx){
   <p><a href="https://spunk.codes/newsletter.html" style="color:#58a6ff;" target="_blank" rel="noopener">Get free ebooks &rarr;</a></p>
 </div>
 
-<script src="https://spunk.codes/spunk-ads.js" defer></script>
 </body>
 </html>
